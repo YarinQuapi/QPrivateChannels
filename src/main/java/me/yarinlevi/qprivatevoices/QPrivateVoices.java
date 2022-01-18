@@ -3,7 +3,8 @@ package me.yarinlevi.qprivatevoices;
 import lombok.Getter;
 import me.yarinlevi.qprivatevoices.commandhandler.CommandManager;
 import me.yarinlevi.qprivatevoices.configuration.Configuration;
-import me.yarinlevi.qprivatevoices.listeners.ChannelListener;
+import me.yarinlevi.qprivatevoices.listeners.ChannelManager;
+import me.yarinlevi.qprivatevoices.utilities.Logger;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -26,7 +27,8 @@ public class QPrivateVoices {
      */
     @Getter private final Map<String, Configuration> configurations = new HashMap<>();
 
-    @Getter private CommandManager commandManager;
+    @Getter private final CommandManager commandManager;
+    @Getter private final ChannelManager channelManager;
 
     protected QPrivateVoices() throws LoginException {
         instance = this;
@@ -37,17 +39,22 @@ public class QPrivateVoices {
 
         version = configurations.get("qbot").getString("version");
 
+        commandManager = new CommandManager();
+        channelManager = new ChannelManager();
+
         JDABuilder jdaBuilder = JDABuilder.createDefault(token)
                 .setStatus(OnlineStatus.ONLINE)
                 .setActivity(Activity.of(Activity.ActivityType.PLAYING, "QVoiceOS v" + version))
-                .addEventListeners(new ChannelListener());
+                .addEventListeners(channelManager, commandManager);
 
         jda = jdaBuilder.build();
 
-        commandManager = new CommandManager(jda);
+        commandManager.complete(jda);
+
+        Logger.info("Happy private chatting!");
     }
 
-    protected void loadConfigs() {
+    private void loadConfigs() {
         Configuration config = Configuration.load("qbot.yml");
         configurations.put("qbot", config);
     }

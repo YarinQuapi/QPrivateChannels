@@ -1,5 +1,6 @@
 package me.yarinlevi.qprivatevoices.configuration;
 
+import me.yarinlevi.qprivatevoices.utilities.Logger;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
@@ -22,7 +23,7 @@ public class Configuration {
      * Initialize the configuration
      **/
     public Configuration(String filePath) {
-        System.out.println("Attempting to load configuration: " + filePath);
+        Logger.info("Attempting to load configuration: " + filePath);
         this.loadConfig(filePath);
     }
 
@@ -31,7 +32,7 @@ public class Configuration {
     }
 
     public void loadConfig(String filePath) {
-        System.out.println("Loading configuration ...");
+        Logger.info("Loading configuration ...");
         configFile = new File(filePath);
         if (!configFile.exists()) {
             // Create file
@@ -39,14 +40,15 @@ public class Configuration {
                 InputStream jarURL = this.getClass().getResourceAsStream(
                         "/" + filePath);
                 if (jarURL != null) {
-                    System.out.println("Copying '" + configFile
+                    Logger.info("Copying '" + configFile
                             + "' from the resources!");
                     copyFile(jarURL, configFile);
                 } else {
-                    System.out.println("Configuration file not found inside the application!");
+                    Logger.error("Configuration file not found inside the application!");
                 }
                 jarURL.close();
             } catch (Exception e) {
+                Logger.error(e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -57,8 +59,10 @@ public class Configuration {
                 result = yaml.load(ios);
                 ios.close();
             } catch (FileNotFoundException e) {
+                Logger.error("Error! no config file found!");
                 // Error while loading the file
             } catch (IOException e) {
+                Logger.error("Error! trouble closing file, please check for corruption!");
                 // Error while closing
             }
         }
