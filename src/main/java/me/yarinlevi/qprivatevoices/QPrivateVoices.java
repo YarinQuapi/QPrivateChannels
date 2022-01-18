@@ -3,6 +3,7 @@ package me.yarinlevi.qprivatevoices;
 import lombok.Getter;
 import me.yarinlevi.qprivatevoices.commandhandler.CommandManager;
 import me.yarinlevi.qprivatevoices.configuration.Configuration;
+import me.yarinlevi.qprivatevoices.database.QDatabase;
 import me.yarinlevi.qprivatevoices.listeners.ChannelManager;
 import me.yarinlevi.qprivatevoices.utilities.Logger;
 import net.dv8tion.jda.api.JDA;
@@ -11,6 +12,7 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 
 import javax.security.auth.login.LoginException;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +29,7 @@ public class QPrivateVoices {
      */
     @Getter private final Map<String, Configuration> configurations = new HashMap<>();
 
+    @Getter private final QDatabase database;
     @Getter private final CommandManager commandManager;
     @Getter private final ChannelManager channelManager;
 
@@ -47,9 +50,14 @@ public class QPrivateVoices {
                 .setActivity(Activity.of(Activity.ActivityType.PLAYING, "QVoiceOS v" + version))
                 .addEventListeners(channelManager, commandManager);
 
+        // Connection to discord
         jda = jdaBuilder.build();
 
+        // Command registration
         commandManager.complete(jda);
+
+        // Database initialization
+        database = new QDatabase();
 
         Logger.info("Happy private chatting!");
     }
@@ -57,5 +65,9 @@ public class QPrivateVoices {
     private void loadConfigs() {
         Configuration config = Configuration.load("qbot.yml");
         configurations.put("qbot", config);
+    }
+
+    public String getDataFolder() {
+        return System.getProperty("user.dir");
     }
 }

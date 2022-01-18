@@ -6,7 +6,7 @@
 
     <groupId>org.example</groupId>
     <artifactId>QPrivateVoices</artifactId>
-    <version>0.1-dev-1</version>
+    <version>0.1-dev-2</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -79,13 +79,25 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.0-alpha5</version>
+            <version>2.0.0-alpha6</version>
         </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>2.0.0-alpha5</version>
+            <version>2.0.0-alpha6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.36.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.0.0</version>
         </dependency>
 
         <dependency>

@@ -1,6 +1,7 @@
 package me.yarinlevi.qprivatevoices.listeners;
 
 import lombok.Getter;
+import me.yarinlevi.qprivatevoices.database.QDatabase;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -10,6 +11,8 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,21 +28,33 @@ public class ChannelManager extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceJoin(@NotNull GuildVoiceJoinEvent event) {
-        if (event.getChannelJoined().getName().equalsIgnoreCase("join to create")) {
+        ResultSet rs = QDatabase.getInstance().get("SELECT * FROM `guildTable` WHERE `guildId`=\"" + event.getGuild().getId() + "\";");
 
-            String username = event.getMember().getNickname() == null ? event.getMember().getEffectiveName() : event.getMember().getNickname();
+        try {
+            if (rs != null && rs.next()) {
 
-            VoiceChannel channel = event.getGuild().createVoiceChannel(username + "'s Channel").complete();
-            Member member = event.getMember();
+                long categoryId = rs.getLong("categoryId");
+                long joinToCreate = rs.getLong("joinToCreateId");
 
-            // Move the member from join channel to the new channel
-            member.getGuild().moveVoiceMember(member, channel).queue();
+                if (event.getChannelJoined().getId().equalsIgnoreCase(String.valueOf(joinToCreate)) && event.getGuild().getCategoryById(categoryId) != null) {
 
-            // Permission settings
-            channel.createPermissionOverride(member).setAllow(Permission.VOICE_CONNECT, Permission.VOICE_SPEAK).queue();
-            channel.createPermissionOverride(channel.getGuild().getPublicRole()).setDeny(Permission.VOICE_CONNECT).queue();
+                    String username = event.getMember().getNickname() == null ? event.getMember().getEffectiveName() : event.getMember().getNickname();
 
-            memberVoiceChannelMap.put(member, channel);
+                    VoiceChannel channel = event.getGuild().getCategoryById(categoryId).createVoiceChannel(username + "'s Channel").complete();
+                    Member member = event.getMember();
+
+                    // Move the member from join channel to the new channel
+                    member.getGuild().moveVoiceMember(member, channel).queue();
+
+                    // Permission settings
+                    channel.createPermissionOverride(member).setAllow(Permission.VOICE_CONNECT, Permission.VOICE_SPEAK).queue();
+                    channel.createPermissionOverride(channel.getGuild().getPublicRole()).setDeny(Permission.VOICE_CONNECT).queue();
+
+                    memberVoiceChannelMap.put(member, channel);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
